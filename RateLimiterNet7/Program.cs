@@ -10,9 +10,9 @@ builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter(RateLimitingPolicyName, opt =>
     {
-        opt.Window = TimeSpan.FromSeconds(10);
+        opt.Window = TimeSpan.FromSeconds(5);
         opt.PermitLimit = 1;
-        opt.QueueLimit = 0;
+        // opt.QueueLimit = 1;
     });
     
     options.OnRejected = (context, _) =>
@@ -30,11 +30,7 @@ var app = builder.Build();
 
 app.UseRateLimiter();
 
-app.MapGet("/user", context =>
-    {
-        Console.WriteLine($"timestamp : {DateTime.Now:MM/dd/yyyy hh:mm:ss.fff tt}");
-        return CreateResponse(context, "Hello User");
-    })
+app.MapGet("/user", context => CreateResponse(context, "Hello User"))
     .RequireRateLimiting(RateLimitingPolicyName);
 
 app.MapGet("/admin", context => CreateResponse(context, "Hello Admin"));
@@ -43,6 +39,7 @@ app.Run();
 
 Task CreateResponse(HttpContext httpContext, string message)
 {
+    Console.WriteLine($"timestamp : {DateTime.Now:MM/dd/yyyy hh:mm:ss.fff tt}");
     return httpContext.Response.WriteAsJsonAsync(new Response
     {
         Message = message
